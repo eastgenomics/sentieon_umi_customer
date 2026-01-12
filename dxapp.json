@@ -1,0 +1,357 @@
+{
+	"name": "sentieon-umi-customer",
+	"title": "Sentieon UMI",
+	"summary": "Performs pre-procesing of UMI FASTQ files through UMI tag extraction and barcode-aware duplicate removal and consensus calling, and final alignment to create a sorted and deduplicated BAM file from FASTQ files",
+	"version": "0.0.1",
+	"inputSpec":
+	[
+		{
+			"name": "readsidx_fastqgzs", 
+			"label": "Reads (UMI sequence)",
+			"help": "An array of files, in gzipped FASTQ format, with the UMI index.",
+			"class": "array:file",
+			"patterns": ["*.fq.gz", "*.fastq.gz"],
+			"optional": true
+		},
+		{
+			"name": "reads_fastqgzs", 
+			"label": "Reads",
+			"help": "An array of files, in gzipped FASTQ format, with the first read mates to be mapped.",
+			"class": "array:file",
+			"patterns": ["*.fq.gz", "*.fastq.gz"],
+			"optional": false
+		},
+		{
+			"name": "reads2_fastqgzs",
+			"label": "Reads (right mates)",
+			"help": "(Optional) An array of files, in gzipped FASTQ format, with the second read mates to be mapped.",
+			"class": "array:file",
+			"patterns": ["*.fq.gz", "*.fastq.gz"],
+			"optional": false
+		},
+		{
+			"name": "rg_info_csv",
+			"label": "Read group information",
+			"help": "(Optional) A file, in CSV format, with each row describing RG tag information for each (pair) of read files in the following order: read_filename, RG ID, RG LB, RG PU. This file needs to cover and match all FASTQ filenames of \"Reads\" (reads_fastqgzs).",
+			"class": "file",
+			"patterns": ["*.csv"],
+			"optional": true
+		},
+		{
+			"name": "genomebwaindex_targz",
+			"label": "BWA reference genome index",
+			"help": "A file, in gzipped tar archive format, with the reference genome sequence already indexed with BWA.",
+			"class": "file",
+			"patterns": ["*.bwa-index.tar.gz"],
+			"optional": false,
+			"suggestions":
+			[
+				{
+					"project": "project-BQpp3Y804Y0xbyG4GJPQ01xv",
+					"path": "/",
+					"region": "aws:us-east-1",
+					"name": "DNAnexus Reference Genomes: AWS US-east"
+				},
+				{
+					"project": "project-F3zxk7Q4F30Xp8fG69K1Vppj",
+					"path": "/",
+					"region": "aws:eu-central-1",
+					"name": "DNAnexus Reference Genomes: AWS Germany"
+				},
+				{
+					"project": "project-FGX8gVQB9X7K5f1pKfPvz9yG",
+					"path": "/",
+					"region": "azure:westeurope",
+					"name": "DNAnexus Reference Genomes: Azure Amsterdam"
+				},
+				{
+					"project": "project-F4gXb605fKQyBq5vJBG31KGG",
+					"path": "/",
+					"region": "aws:ap-southeast-2",
+					"name": "DNAnexus Reference Genomes: AWS Sydney"
+				},
+				{
+					"project": "project-F0yyz6j9Jz8YpxQV8B8Kk7Zy",
+					"path": "/",
+					"region": "azure:westus",
+					"name": "DNAnexus Reference Genomes: Azure West US"
+				},
+				{
+					"project": "project-G4FX6vXKb5P1FBFFJjXv4ypq",
+					"path": "/",
+					"region": "aws:eu-west-2-g",
+					"name": "DNAnexus Reference Genomes: AWS London"
+				}
+			]
+		},
+		{
+			"name": "genome_fastagz",
+			"label": "Reference genome FASTA file",
+			"help": "A file, in gzipped format, with the reference genome sequence. Please make sure this is the same build as the one used above for the BWA reference genome index.",
+			"class": "file",
+			"patterns": ["*.fa*.gz"],
+			"optional": false,
+			"suggestions":
+			[
+				{
+					"project": "project-BQpp3Y804Y0xbyG4GJPQ01xv",
+					"path": "/",
+					"region": "aws:us-east-1",
+					"name": "DNAnexus Reference Genomes: AWS US-east"
+				},
+				{
+					"project": "project-F3zxk7Q4F30Xp8fG69K1Vppj",
+					"path": "/",
+					"region": "aws:eu-central-1",
+					"name": "DNAnexus Reference Genomes: AWS Germany"
+				},
+				{
+					"project": "project-FGX8gVQB9X7K5f1pKfPvz9yG",
+					"path": "/",
+					"region": "azure:westeurope",
+					"name": "DNAnexus Reference Genomes: Azure Amsterdam"
+				},
+				{
+					"project": "project-F4gXb605fKQyBq5vJBG31KGG",
+					"path": "/",
+					"region": "aws:ap-southeast-2",
+					"name": "DNAnexus Reference Genomes: AWS Sydney"
+				},
+				{
+					"project": "project-F0yyz6j9Jz8YpxQV8B8Kk7Zy",
+					"path": "/",
+					"region": "azure:westus",
+					"name": "DNAnexus Reference Genomes: Azure West US"
+				},
+				{
+					"project": "project-G4FX6vXKb5P1FBFFJjXv4ypq",
+					"path": "/",
+					"region": "aws:eu-west-2-g",
+					"name": "DNAnexus Reference Genomes: AWS London"
+				}
+			]
+		},
+		{
+			"name": "read_group_platform",
+			"label": "Read group platform",
+			"help": "This is a string (without spaces) describing the platform/technology used to produce the reads. The read group platform will appear in the read group information in the BAM file (as RG PL tag).",
+			"class": "string",
+			"default": "ILLUMINA",
+			"choices": ["ILLUMINA", "SOLID", "LS454", "HELICOS", "PACBIO", "COMPLETE_GENOMICS", "DNBSEQ", "ELEMENT", "ION_TORRENT", "ULTIMA" ],
+			"optional": false,
+			"group": "Sample Information"
+		},
+		{
+			"name": "sample",
+			"label": "Sample ID",
+			"help": "(Optional) A string (without spaces) describing the sample. This Sample ID will appear in the read group information in the BAM file (as RG SM tag) and in the sample information in the VCF file. The output files will be prefixed by this string. If not specified, the Sample ID will be set as the prefix of the FASTQ filename.",
+			"class": "string",
+			"optional": true,
+			"group": "Sample Information"
+		},
+		{
+			"name": "stream_inputs",
+			"label": "Stream Input Reads?",
+			"help": "Selecting this option will stream in input FASTQ files and potentially speed-up the calcualtion. Default is true. Streaming the inputs may cause an input data access issue for very large FASTQ files, if that is the case, you should try rerunning the job with this option off.",
+			"class": "boolean",
+			"optional": false,
+			"default": true,
+			"group": "Input Options"
+		},
+		{
+			"name": "output_format",
+			"label": "Output a BAM or a CRAM file?",
+			"help": "Selecting \"BAM\" will create an output file in BAM format, while selecting \"CRAM\" will create an output file in CRAM format. Default is BAM.",
+			"class": "string",
+			"optional": false,
+			"choices": ["BAM","CRAM"],
+			"default": "BAM",
+			"group": "Output Options"
+		},
+		{
+			"name": "output_metrics",
+			"label": "Calculate and output the BAM metrics?",
+			"help": "Selecting this option will calculate and output the following metrics of the BAM file: Base Quality Score Distribution (QualDistribution), Insert Size Distribution (InsertSize), Alignment Statistics (AlignmentStat), GC Bias (GCBias and GCBiasSummary), Mean Base Quality Score per Sequencing Cycle (MeanQualityByCycle) and Deduplication. Default is false.",
+			"class": "boolean",
+			"optional": false,
+			"default": false,
+			"group": "Output Options"
+		},
+		{
+			"name": "output_md5sum",
+			"label": "Calculate output md5sum",
+			"help": "Calculate and output md5sum files for BAM, CRAM and VCF outputs",
+			"class": "boolean",
+			"optional": false,
+			"default": false,
+			"group": "Output Options"
+		},
+		{
+			"name": "read_template",
+			"label": "UMI read template",
+			"help": "UMI read template determining the read structure. A read structure is defined by <number><operator> pairs. The number can be any digit or '+' to indicate the end of the read. Possible operators include: T - the template sequence, M - the molecular barcode sequence, S - a sequence of bases that should be ignored. For example '8M12S+T,+T' can be used for paired reads where the first read has an 8bp UMI, and a 12bp spacer sequence followed by the read template. A duplex UMI with a 4bp UMi could be specified with, '4M+T,4M+T'.",
+			"class": "string",
+			"optional": false,
+			"group": "Algorithm Options"
+		},
+		{
+			"name": "duplex_umi",
+			"label": "Duplex UMI",
+			"help": "Selecting this will indicate the tool that the inputs are from duplex UMI. Duplex UMI extraction requires an identical read structure for both strands.",
+			"class": "boolean",
+			"optional": false,
+			"default": false,
+			"group": "Algorithm Options"
+		},
+		{
+			"name": "extra_bwa_options",
+			"label": "Extra BWA Options",
+			"help": "(Optional) Extra BWA options.",
+			"class": "string",
+			"optional": true,
+			"default": "-K 10000000",
+			"group": "Algorithm Options"
+		},
+		{
+			"name": "bwa_nonverbose",
+			"label": "Reduce BWA logs",
+			"help": "Selecting this option will reduce the log messages from BWA; this may be useful when running with very large samples, to make sure that the log does not reach the size limit.",
+			"class": "boolean",
+			"optional": false,
+			"default": false,
+			"group": "Advanced Options"
+		},
+		{
+			"name": "bam_compression",
+			"label": "Intermediate BAM compression",
+			"help": "Compression of the intermediate BAM files. Using the default 1 will achieve the fastest processing, while selecting 6 or 9 will reduce the intermediate storage requirements at the expese of a slower processing.",
+			"class": "string",
+			"optional": false,
+			"choices": ["1", "6", "9"],
+			"default": "1",
+			"group": "Advanced Options"
+		}
+	],
+	"outputSpec": [
+		{
+			"name": "mappings_bam",
+			"label": "Sorted mappings",
+			"help": "A coordinate-sorted BAM file with the resulting mappings.",
+			"class": "file",
+			"patterns": ["*.bam","*.cram"]
+		},
+		{
+			"name": "mappings_bam_bai",
+			"label": "Sorted mappings index",
+			"help": "The associated BAM index file.",
+			"class": "file",
+			"patterns": ["*.bai","*.crai"]
+		},
+		{
+			"name": "metrics",
+			"label": "Reads stats metrics",
+			"help": "An array of files containing statistical summaries of the data quality.",
+			"class": "array:file",
+			"patterns": ["*metrics.txt", "*metrics.pdf"],
+			"optional": true
+		},
+		{
+			"name": "md5sums",
+			"label": "MD5 sum files for most outputs",
+			"help": "An array of files containing the md5sum files for BAM, CRAM and VCF outputs.",
+			"class": "array:file",
+			"patterns": ["*.md5"],
+			"optional": true
+		}
+	],
+	"openSource": false,
+	"details": {
+		"whatsNew": "<WHATSNEW>",
+		"upstreamVersion": "<PREV_VERSION>",
+		"upstreamAuthor": "Sentieon",
+		"upstreamUrl": "http://www.sentieon.com/",
+		"citations": ["doi:10.1101/115717"]
+	},
+	"categories":
+	[
+		"Read Mapping",
+		"DNAseq"
+	],
+	"billTo": "org-sentieon_inc",
+	"runSpec":
+	{
+		"timeoutPolicy":
+		{ 
+			"*":
+			{ 
+				"hours": 24 
+			}
+		},
+		"assetDepends": [
+        {
+          "name": "htslib_suite_asset",
+          "project": "project-Fkb6Gkj433GVVvj73J7x8KbV",
+          "folder": "/app_assets/htslib/htslib_v1.22.0",
+          "version": "1.22"
+        }
+      ],
+		"execDepends": [
+            {"name": "rename"}
+        ],
+        "distribution": "Ubuntu",
+		"release": "20.04",
+		"version": "0",
+		"file": "src/code.sh",
+		"interpreter": "bash"
+	},
+	"regionalOptions":
+	{
+		"aws:us-east-1":
+		{
+			"systemRequirements":
+			{
+				"main":{"instanceType": "mem1_ssd1_v2_x36"}
+			}
+		},
+		"aws:eu-central-1":
+		{
+			"systemRequirements":
+			{
+				"main": {"instanceType": "mem1_ssd1_v2_x36"}
+			}
+		},
+		"aws:ap-southeast-2":
+		{
+			"systemRequirements":
+			{
+				"main": {"instanceType": "mem1_ssd1_v2_x36"}
+			}
+		},
+		"azure:westus":
+		{
+			"systemRequirements":
+			{
+				"main": {"instanceType": "azure:mem2_ssd1_x16"}
+			}
+		},
+		"azure:westeurope":
+		{
+			"systemRequirements":
+			{
+				"main": {"instanceType": "azure:mem2_ssd1_x16"}
+			}
+		},
+		"aws:eu-west-2-g":
+		{
+			"systemRequirements":
+			{
+				"main": {"instanceType": "mem1_ssd1_v2_x36"}
+			}
+		}
+	},
+	"access":
+	{
+		"network": ["*"],
+		 "allProjects": "VIEW"
+	}
+}
