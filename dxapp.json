@@ -277,7 +277,6 @@
 		"Read Mapping",
 		"DNAseq"
 	],
-	"billTo": "org-sentieon_inc",
 	"runSpec":
 	{
 		"timeoutPolicy":
@@ -306,42 +305,7 @@
 	},
 	"regionalOptions":
 	{
-		"aws:us-east-1":
-		{
-			"systemRequirements":
-			{
-				"main":{"instanceType": "mem1_ssd1_v2_x36"}
-			}
-		},
 		"aws:eu-central-1":
-		{
-			"systemRequirements":
-			{
-				"main": {"instanceType": "mem1_ssd1_v2_x36"}
-			}
-		},
-		"aws:ap-southeast-2":
-		{
-			"systemRequirements":
-			{
-				"main": {"instanceType": "mem1_ssd1_v2_x36"}
-			}
-		},
-		"azure:westus":
-		{
-			"systemRequirements":
-			{
-				"main": {"instanceType": "azure:mem2_ssd1_x16"}
-			}
-		},
-		"azure:westeurope":
-		{
-			"systemRequirements":
-			{
-				"main": {"instanceType": "azure:mem2_ssd1_x16"}
-			}
-		},
-		"aws:eu-west-2-g":
 		{
 			"systemRequirements":
 			{
@@ -349,9 +313,15 @@
 			}
 		}
 	},
+	  "developers":[
+    "org-emee_1"
+  ],
+  "authorizedUsers": [
+    "org-emee_1"
+  ],
 	"access":
 	{
 		"network": ["*"],
-		 "allProjects": "VIEW"
+		 "allProjects": "CONTRIBUTE"
 	}
 }
