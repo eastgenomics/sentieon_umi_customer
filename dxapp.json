@@ -1,8 +1,8 @@
 {
-	"name": "sentieon_umi_customer",
-	"title": "Sentieon UMI",
+	"name": "eggd_sentieon_umi",
+	"title": "eggd_sentieon_umi",
 	"summary": "Performs pre-procesing of UMI FASTQ files through UMI tag extraction and barcode-aware duplicate removal and consensus calling, and final alignment to create a sorted and deduplicated BAM file from FASTQ files",
-	"version": "0.0.1",
+	"version": "1.0.0",
 	"inputSpec":
 	[
 		{
