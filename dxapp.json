@@ -6,7 +6,7 @@
 	"inputSpec":
 	[
 		{
-			"name": "readsidx_fastqgzs", 
+			"name": "readsidx_fastqgzs",
 			"label": "Reads (UMI sequence)",
 			"help": "An array of files, in gzipped FASTQ format, with the UMI index.",
 			"class": "array:file",
@@ -14,7 +14,7 @@
 			"optional": true
 		},
 		{
-			"name": "reads_fastqgzs", 
+			"name": "reads_fastqgzs",
 			"label": "Reads",
 			"help": "An array of files, in gzipped FASTQ format, with the first read mates to be mapped.",
 			"class": "array:file",
@@ -280,10 +280,10 @@
 	"runSpec":
 	{
 		"timeoutPolicy":
-		{ 
+		{
 			"*":
-			{ 
-				"hours": 24 
+			{
+				"hours": 24
 			}
 		},
 		"assetDepends": [

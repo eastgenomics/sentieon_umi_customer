@@ -23,22 +23,22 @@ This app requires:
 - An array of either single gzipped FASTQ files (for single-end experiments) or paired FASTQ files (for paired-end experiments).
 - The reference genome and a BWA indexed reference genome.
 - A read structure that defines the format that the sequence of the read follows.
-- An optional read group info file in CSV format can be provided to specify the read group information for the input FASTQ files. 
-Each row of the CSV file corresponds to one pair of FASTQ file, and contains four read group attributes separated by comma: 
-  1. filename of the first FASTQ mate, 
-  2. RG ID (read group identifier) tag, 
-  3. RG LB (read group library) tag, 
-  4. RG PU (read group platform unit) tag. 
+- An optional read group info file in CSV format can be provided to specify the read group information for the input FASTQ files.
+Each row of the CSV file corresponds to one pair of FASTQ file, and contains four read group attributes separated by comma:
+  1. filename of the first FASTQ mate,
+  2. RG ID (read group identifier) tag,
+  3. RG LB (read group library) tag,
+  4. RG PU (read group platform unit) tag.
 
-  Note that the filenames in the first column need to include all the intput FASTQ filenames of the first mate. 
+  Note that the filenames in the first column need to include all the intput FASTQ filenames of the first mate.
 
   Below is an example:
   ```
-  SRR123453_1.fastq.gz,SRR123453_1,Library1,SRR123453_1 
-  SRR123454_1.fastq.gz,SRR123454_2,Library1,SRR123454_2 
-  SRR123455_1.fastq.gz,SRR123455_3,Library2,SRR123455_3 
-  SRR123456_1.fastq.gz,SRR123456_4,Library3,SRR123456_4 
-  SRR123457_1.fastq.gz,SRR123457_5,Library3,SRR123457_5 
+  SRR123453_1.fastq.gz,SRR123453_1,Library1,SRR123453_1
+  SRR123454_1.fastq.gz,SRR123454_2,Library1,SRR123454_2
+  SRR123455_1.fastq.gz,SRR123455_3,Library2,SRR123455_3
+  SRR123456_1.fastq.gz,SRR123456_4,Library3,SRR123456_4
+  SRR123457_1.fastq.gz,SRR123457_5,Library3,SRR123457_5
   SRR123458_1.fastq.gz,SRR123458_6,Library4,SRR123458_6
   ```
 
