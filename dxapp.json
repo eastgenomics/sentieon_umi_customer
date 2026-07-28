@@ -295,8 +295,8 @@
         },
         {
           "name": "gnuplot_nox_asset",
-          "project": "project-Fkb6Gkj433GVVvj73J7x8KbV",
-          "folder": "/app_assets/gnuplot/gnuplot_nox_v1.0.0",
+          "project": "project-J9ZFkG84YvV0P6KfxgvByXj5",
+          "folder": "/assets/",
           "version": "1.0.0"
         }
       ],
