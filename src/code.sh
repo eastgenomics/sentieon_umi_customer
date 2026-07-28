@@ -123,7 +123,7 @@ streaming_upload()
 ########################
 module_download_inputs()
 {
-	# Download all inputs 
+	# Download all inputs
 	EXCEPT_LIST="$EXCEPT_LIST --except genome_fastagz --except mappings_bam"
 	dx-download-all-inputs --parallel $EXCEPT_LIST
 
@@ -148,18 +148,24 @@ module_download_inputs()
 		untarGenomeIndexTargz_pid=$!
 		wait_pids_arr+=(${untarGenomeIndexTargz_pid})
 	fi
-	
+
 	# Wait until untar commands are done
 	wait_pids "${wait_pids_arr[@]}"
 	unset wait_pids_arr
 	wait_pids_arr=()
-	
-	# Rename genome file
+
+	# Rename generically-named BWA index files (genome.fa*) to match the FASTA prefix.
+	# Tarballs whose members are already prefixed are left untouched.
 	genome_file_prefix="${genomebwaindex_targz_name%.bwa-index.tar.gz}"
-	rename "s/genome\.fa/${genome_file_prefix}\.fa/" ./genome/genome* || true
+	if [ "$genome_file_prefix" != "genome" ]; then
+		for index_file in ./genome/genome.fa*; do
+			[ -e "$index_file" ] || continue
+			mv -f -- "$index_file" "./genome/${genome_file_prefix}.fa${index_file#./genome/genome.fa}"
+		done
+	fi
 	mv genome_temp.fa.fai "${genome_file}.fai"
 	rm genome_temp.fa
-	
+
 	#check if the BWA indices and the FASTA match
 	if [ "$genomebwaindex_targz" != "" ]; then
 		found_right=false
@@ -172,7 +178,7 @@ module_download_inputs()
 			error_report "The BWA reference genome index does not correspond to the Reference genome FASTA file. The app will exit now."
 		fi
 	fi
-	
+
 	# Set sample name if not given
 	if [ "$sample" = "" ]; then
 		sample="${reads_fastqgzs_prefix[0]}"
@@ -188,20 +194,20 @@ module_download_inputs()
 module_umi_align()
 #output is ${dedup_bam_name}.${dedup_bam_extension} and ${CASE_PREFIX}metrics_files
 #expects reads_fastqgzs_name reads_fastqgzs_prefix reads_fastqgzs_path and reads2_fastqgzs_path reads_fastqgzs and reads2_fastqgzs arrays
-{   	
+{
 	if [ "${CASE_NAME}" != "" ]; then
 		CASE_PREFIX="${CASE_NAME}_"
 		CASE_POSTFIX="_${CASE_NAME}"
 	fi
-	CASE_SAMPLE="$sample$CASE_POSTFIX"	
+	CASE_SAMPLE="$sample$CASE_POSTFIX"
 	# Run bwa mem
 	# Determine correct bwt mem
 	mem_kb=$(cat /proc/meminfo | grep "MemTotal" | awk '{print $2}')
 	mem_kb=$((mem_kb<400000000 ? mem_kb : 400000000)) #, but limit to reduce loading time in very high memory machines?
 	export bwt_max_mem="$((mem_kb / 1024 / 1024 - 6))g"
 	# If read group information CSV file exists: (1) Load read group information into arrays (2) Check if all input filenames can map to a row of read group info
-	declare -A read_group_id_array 
-	declare -A read_group_library_array 
+	declare -A read_group_id_array
+	declare -A read_group_library_array
 	declare -A read_group_pu_array
 	if [[ "$rg_info_csv_path" != "" ]]; then
 		tr -d '\r' < "${rg_info_csv_path}" > "rg_info_csv_wo_carriagereturns.csv"
@@ -219,22 +225,22 @@ module_umi_align()
 			read_group_library_array[${filename}]="$(echo -e "${rg_info[2]}" | sed -e 's/[[:space:]]*$//')";
 			read_group_pu_array[${filename}]="$(echo -e "${rg_info[3]}" | sed -e 's/[[:space:]]*$//')";
 		done < "rg_info_csv_wo_carriagereturns.csv"
-	
+
 		# Check if all input filanems have corresponding read group info in the CSV file
 		for i in ${!reads_fastqgzs_name[@]}; do
 			match=0
 			filename=${reads_fastqgzs_name[$i]}
-			for key in "${!read_group_id_array[@]}"; do 
+			for key in "${!read_group_id_array[@]}"; do
 				if [ "${filename}" = "${key}" ]; then
 					match=1
 					break
 				fi
 			done
-	
-			if [[ "$match" -eq 0 ]]; then 
+
+			if [[ "$match" -eq 0 ]]; then
 				error_report "Cannot find read group info for FASTQ file \"${filename}\". Please check the read group information file \"${rg_info_csv_name}\" before re-run."
 				#dx-jobutil-report-error "Cannot find read group info for FASTQ file \"${filename}\". Please check the read group information file \"${rg_info_csv_name}\" before re-run."
-			fi 
+			fi
 		done
 	fi
 	#run UMI pipeline per pair of inputs
@@ -270,7 +276,7 @@ module_umi_align()
         read_idx_path=""
         if [ ${#readsidx_fastqgzs_path[@]} -ne 0 ]; then
             read_idx_path="${readsidx_fastqgzs_path[$i]}"
-        fi		
+        fi
 
 		# Extract + aln with bwa
 		if [ "$stream_inputs" = "true" ]; then
@@ -389,7 +395,7 @@ if [ "${output_metrics}" = "true" ]; then
         mv ${CASE_PREFIX}aln_metric.txt ~/out/metrics/${sample}_metrics/"$sample".AlignmentStat_metrics.txt
         mv ${CASE_PREFIX}metrics.pdf ~/out/metrics/${sample}_metrics/"$sample".metrics.pdf
 		ff=(${CASE_PREFIX}coverage*)
-	for f in ${ff[@]}; do 
+	for f in ${ff[@]}; do
 		if [ -z "${CASE_PREFIX}" ]; then
 			f1=${sample}.$f
 		else

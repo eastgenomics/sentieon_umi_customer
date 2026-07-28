@@ -300,9 +300,6 @@
           "version": "1.0.0"
         }
       ],
-		"execDepends": [
-            {"name": "rename"}
-        ],
         "distribution": "Ubuntu",
 		"release": "20.04",
 		"version": "0",
