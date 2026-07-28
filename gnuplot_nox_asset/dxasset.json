@@ -1,0 +1,12 @@
+{
+  "name": "gnuplot_nox_asset",
+  "title": "gnuplot-nox",
+  "description": "Headless gnuplot (gnuplot-nox), used by eggd_sentieon_umi to render the Sentieon plot metrics PDF. The -nox build avoids pulling in the Qt/GTK desktop dependency chain (gnome-shell, gdm3, etc.) that the plain gnuplot package resolves to.",
+  "version": "1.0.0",
+  "distribution": "Ubuntu",
+  "release": "20.04",
+  "instanceType": "mem1_ssd1_v2_x4",
+  "execDepends": [
+    {"name": "gnuplot-nox", "package_manager": "apt"}
+  ]
+}

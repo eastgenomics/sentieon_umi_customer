@@ -3,7 +3,6 @@
 # The following line causes bash to exit at any point if there is any error
 # and to output each line as it is executed -- useful for debugging
 set -eo pipefail
-apt-get update && apt-get install -y gnuplot
 # Set up options
 source /home/dnanexus/license_setup.sh
 
